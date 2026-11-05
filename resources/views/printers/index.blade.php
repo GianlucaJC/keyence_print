@@ -1,0 +1,7 @@
+<x-layouts.app>
+    <div class="page-title"><div><h1>Marcatori</h1><p class="muted">Configurazione Ethernet della Serie MK-G.</p></div><a class="button" href="{{ route('printers.create') }}">+ Nuovo marcatore</a></div>
+    <section class="card"><table><thead><tr><th>Nome</th><th>Indirizzo</th><th>Protocollo</th><th>Timeout</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>
+    @forelse ($printers as $printer)<tr><td><strong>{{ $printer->name }}</strong><br><span class="muted">{{ $printer->description }}</span></td><td>{{ $printer->host }}:{{ $printer->port }}</td><td>{{ $printer->protocol_format === 'cr' ? 'CR (0Dh)' : 'STX / ETX' }}{{ $printer->checksum_enabled ? ' + checksum' : '' }}</td><td>{{ $printer->timeout_ms }} ms</td><td><span @class(['status', 'ok' => $printer->is_active, 'error' => ! $printer->is_active])>{{ $printer->is_active ? 'ATTIVO' : 'DISATTIVO' }}</span></td><td><div class="actions"><form method="post" action="{{ route('printers.test', $printer) }}">@csrf<button class="button small secondary">Test</button></form><a class="button small secondary" href="{{ route('printers.edit', $printer) }}">Modifica</a><form method="post" action="{{ route('printers.destroy', $printer) }}">@csrf @method('DELETE')<button class="button small danger" onclick="return confirm('Eliminare il marcatore?')">Elimina</button></form></div></td></tr>
+    @empty <tr><td colspan="6" class="muted">Nessun marcatore configurato.</td></tr> @endforelse
+    </tbody></table></section>
+</x-layouts.app>

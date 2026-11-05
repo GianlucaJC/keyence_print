@@ -1,0 +1,7 @@
+<x-layouts.app>
+    <div class="page-title"><div><h1>Ricette</h1><p class="muted">Associa i campi operatore al programma e messaggio della stampante.</p></div><a class="button" href="{{ route('recipes.create') }}">+ Nuova ricetta</a></div>
+    <section class="card"><table><thead><tr><th>Nome</th><th>Marcatore</th><th>Destinazione MK-G</th><th>Campi</th><th>Stato</th><th>Azioni</th></tr></thead><tbody>
+    @forelse ($recipes as $recipe)<tr><td><strong>{{ $recipe->name }}</strong><br><span class="muted">{{ $recipe->description }}</span></td><td>{{ $recipe->printer->name }}</td><td>Programma {{ $recipe->program_number }}<br>Messaggio {{ $recipe->message_number }}</td><td>{{ $recipe->fields()->count() }}</td><td><span @class(['status', 'ok' => $recipe->is_active, 'error' => ! $recipe->is_active])>{{ $recipe->is_active ? 'ATTIVA' : 'DISATTIVA' }}</span></td><td><div class="actions"><a class="button small" href="{{ route('operator.show', $recipe) }}">Operatore</a><a class="button small secondary" href="{{ route('recipes.edit', $recipe) }}">Modifica</a><form method="post" action="{{ route('recipes.destroy', $recipe) }}">@csrf @method('DELETE')<button class="button small danger" onclick="return confirm('Eliminare la ricetta e i suoi campi?')">Elimina</button></form></div></td></tr>
+    @empty <tr><td colspan="6" class="muted">Nessuna ricetta configurata.</td></tr> @endforelse
+    </tbody></table></section>
+</x-layouts.app>
