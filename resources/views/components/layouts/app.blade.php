@@ -10,7 +10,7 @@
         .app { display: flex; min-height: 100vh; } .sidebar { width: 250px; padding: 28px 16px; color: #d7ecf4; background: linear-gradient(180deg, var(--blue), var(--dark)); }
         .brand { margin: 0 0 36px; font-size: 24px; font-weight: 700; letter-spacing: .5px; } .brand span { color: #fff; } .brand small { display: block; margin-top: 3px; font-size: 11px; font-weight: 400; letter-spacing: 1.3px; }
         .nav a { display: block; margin: 7px 0; padding: 12px; color: inherit; text-decoration: none; border-radius: 5px; } .nav a:hover, .nav a.active { color: #fff; background: rgba(255,255,255,.14); }
-        .main { width: min(1280px, calc(100% - 250px)); padding: 36px; } .page-title { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; } h1 { margin: 0; font-size: 28px; } h2 { margin: 0 0 14px; font-size: 18px; } .muted { color: #667085; }
+        .main { display: flex; flex-direction: column; width: min(1280px, calc(100% - 250px)); padding: 36px; } .page-title { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 24px; } h1 { margin: 0; font-size: 28px; } h2 { margin: 0 0 14px; font-size: 18px; } .muted { color: #667085; } .app-credit { margin: auto 0 0; padding-top: 32px; color: #667085; font-size: 12px; text-align: center; }
         .grid { display: grid; gap: 20px; } .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         .card { padding: 22px; background: #fff; border: 1px solid #dfe7ec; border-radius: 8px; box-shadow: 0 2px 6px rgba(19, 52, 73, .04); } .metric { font-size: 30px; color: var(--blue); font-weight: 700; }
         label { display: block; margin-bottom: 5px; color: #344054; font-weight: 700; font-size: 13px; } input, select, textarea { width: 100%; padding: 9px 10px; color: #172b3a; background: #fff; border: 1px solid #b8c5ce; border-radius: 4px; font: inherit; } textarea { min-height: 76px; resize: vertical; }
@@ -42,6 +42,7 @@
         @if (session('success')) <div class="alert success">{{ session('success') }}</div> @endif
         @if ($errors->any()) <div class="alert error"><strong>Operazione non completata.</strong><ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div> @endif
         {{ $slot }}
+        <footer class="app-credit">&reg; Realizzazione Custom Software</footer>
     </main>
 </div>
 </body>
