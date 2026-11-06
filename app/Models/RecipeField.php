@@ -19,6 +19,8 @@ class RecipeField extends Model
         'validation_rules',
         'is_required',
         'position',
+        'printer_message_number',
+        'printer_font',
         'layout_x',
         'layout_y',
         'layout_width',
@@ -28,6 +30,8 @@ class RecipeField extends Model
 
     protected $casts = [
         'is_required' => 'boolean',
+        'printer_message_number' => 'integer',
+        'printer_font' => 'integer',
         'layout_x' => 'integer',
         'layout_y' => 'integer',
         'layout_width' => 'integer',

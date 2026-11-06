@@ -35,21 +35,26 @@ class OperatorController extends Controller
         }
 
         $values = $request->validate($rules)['values'] ?? [];
-        $text = implode('', array_map(
-            fn ($field) => (string) ($values[$field->key] ?? ''),
-            $recipe->fields->all()
-        ));
+        $commands = [];
+        $responses = [];
 
         try {
-            $command = $keyence->buildMessageCommand($recipe->program_number, $recipe->message_number, $text);
-            $response = $keyence->send($recipe->printer, $command);
+            foreach ($recipe->fields as $field) {
+                $command = $keyence->buildMessageCommand(
+                    $recipe->program_number,
+                    $field->printer_message_number,
+                    (string) ($values[$field->key] ?? '') ?: ' ',
+                );
+                $commands[] = $command;
+                $responses[] = $keyence->send($recipe->printer, $command);
+            }
 
-            $this->log($recipe, $command, $values, $response, true);
+            $this->log($recipe, implode("\n", $commands), $values, implode("\n", $responses), true);
 
-            return back()->with('success', "Dati trasmessi correttamente. Risposta: {$response}");
+            return back()->with('success', 'Dati trasmessi correttamente. Risposte: '.implode(' | ', $responses));
         } catch (RuntimeException $exception) {
             report($exception);
-            $this->log($recipe, isset($command) ? $command : 'H2', $values, null, false, $exception->getMessage());
+            $this->log($recipe, implode("\n", $commands) ?: 'H2', $values, implode("\n", $responses) ?: null, false, $exception->getMessage());
 
             return back()->withInput()->withErrors(['transmission' => $exception->getMessage()]);
         }

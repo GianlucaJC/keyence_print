@@ -21,5 +21,6 @@ Route::get('/', DashboardController::class)->name('dashboard');
 Route::resource('printers', PrinterController::class)->except('show');
 Route::post('printers/{printer}/test', [PrinterController::class, 'test'])->name('printers.test');
 Route::resource('recipes', RecipeController::class)->except('show');
+Route::post('recipes/{recipe}/sync-layout', [RecipeController::class, 'syncLayout'])->name('recipes.sync-layout');
 Route::get('operator/recipes/{recipe}', [OperatorController::class, 'show'])->name('operator.show');
 Route::post('operator/recipes/{recipe}/send', [OperatorController::class, 'send'])->name('operator.send');

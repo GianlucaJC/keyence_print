@@ -3,25 +3,65 @@
 namespace App\Services;
 
 use App\Models\Printer;
+use App\Models\Recipe;
 use RuntimeException;
 
 class KeyenceCommunicationService
 {
     public function buildMessageCommand(int $programNumber, int $messageNumber, string $text): string
     {
-        if ($programNumber < 1 || $programNumber > 500) {
-            throw new RuntimeException('Il numero programma deve essere compreso tra 1 e 500.');
-        }
-
-        if ($messageNumber < 1 || $messageNumber > 64) {
-            throw new RuntimeException('Il numero messaggio deve essere compreso tra 1 e 64.');
-        }
-
-        if ($text === '' || strlen($text) > 999 || preg_match('/[^\x20-\x7E]/', $text) === 1 || str_contains($text, ',')) {
-            throw new RuntimeException('Il testo deve contenere da 1 a 999 caratteri ASCII stampabili e non può contenere virgole.');
-        }
+        $this->validateMessageText($programNumber, $messageNumber, $text);
 
         return sprintf('H2,%d,%d,%s', $programNumber, $messageNumber, $text);
+    }
+
+    public function buildLayoutCommands(Recipe $recipe): array
+    {
+        $fields = $recipe->relationLoaded('fields') ? $recipe->fields : $recipe->fields()->get();
+
+        if ($fields->isEmpty()) {
+            throw new RuntimeException('La ricetta non contiene campi da programmare.');
+        }
+
+        $commands = [];
+
+        foreach ($fields as $field) {
+            $messageNumber = $field->printer_message_number;
+            $text = $field->default_value ?: '['.$field->key.']';
+
+            $commands[] = $this->buildMessageConditionsCommand(
+                $recipe->program_number,
+                $messageNumber,
+                $field->printer_font,
+                $field->layout_x,
+                $field->layout_y,
+            );
+            $commands[] = $this->buildPrintStringCommand($recipe->program_number, $messageNumber, $text);
+        }
+
+        return $commands;
+    }
+
+    public function buildMessageConditionsCommand(int $programNumber, int $messageNumber, int $font, int $baseX, int $baseY): string
+    {
+        $this->validateProgramAndMessage($programNumber, $messageNumber);
+
+        if ($font < 0 || $font > 22) {
+            throw new RuntimeException('Il font MK-G deve essere compreso tra 0 e 22.');
+        }
+
+        if ($baseX < 0 || $baseX > 4095 || $baseY < 0 || $baseY > 31) {
+            throw new RuntimeException('Le coordinate MK-G non rientrano nei limiti del messaggio.');
+        }
+
+        return sprintf('F1,%03d,%02d,01,%02d,%04d,%02d,0000,00,1,0,00,0', $programNumber, $messageNumber, $font, $baseX, $baseY);
+    }
+
+    public function buildPrintStringCommand(int $programNumber, int $messageNumber, string $text): string
+    {
+        $this->validateMessageText($programNumber, $messageNumber, $text);
+
+        return sprintf('FS,%03d,%02d,0,%s', $programNumber, $messageNumber, $text);
     }
 
     public function requestSystemStatus(Printer $printer): string
@@ -115,5 +155,25 @@ class KeyenceCommunicationService
         }
 
         return strtoupper(str_pad(dechex($checksum), 2, '0', STR_PAD_LEFT));
+    }
+
+    private function validateProgramAndMessage(int $programNumber, int $messageNumber): void
+    {
+        if ($programNumber < 1 || $programNumber > 500) {
+            throw new RuntimeException('Il numero programma deve essere compreso tra 1 e 500.');
+        }
+
+        if ($messageNumber < 1 || $messageNumber > 64) {
+            throw new RuntimeException('Il numero messaggio deve essere compreso tra 1 e 64.');
+        }
+    }
+
+    private function validateMessageText(int $programNumber, int $messageNumber, string $text): void
+    {
+        $this->validateProgramAndMessage($programNumber, $messageNumber);
+
+        if ($text === '' || strlen($text) > 999 || preg_match('/[^\x20-\x7E]/', $text) === 1 || str_contains($text, ',')) {
+            throw new RuntimeException('Il testo deve contenere da 1 a 999 caratteri ASCII stampabili e non può contenere virgole.');
+        }
     }
 }
